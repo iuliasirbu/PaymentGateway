@@ -33,6 +33,7 @@ namespace PaymentGateway.Application.WriteOperations
                     throw new Exception("Product not in stock");
                 }
                 total += product.Value * item.Quantity;
+                transaction.Value = total;
                 ProductsXTransaction pxt = new ProductsXTransaction
                 {
                     ProductId = product.Id,

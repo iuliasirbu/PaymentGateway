@@ -1,7 +1,8 @@
-﻿using Abstractions;
+﻿
+using Abstractions;
 using PaymentGateway.Abstractions;
-using PaymentGateway.Models;
 using PaymentGateway.Data;
+using PaymentGateway.Models;
 using PaymentGateway.PublishedLanguage.WriteSide;
 using System;
 using System.Collections.Generic;
@@ -13,46 +14,54 @@ namespace PaymentGateway.Application.WriteOperations
 {
     public class PurchaseProduct : IWriteOperation<AddProductCommand>
     {
-        public IEventSender eventSender;
-        public PurchaseProduct(IEventSender eventSender)
+        private readonly IEventSender _eventSender;
+        private readonly Database _database;
+
+        public PurchaseProduct(IEventSender eventSender, Database database)
         {
-            this.eventSender = eventSender;
+            _eventSender = eventSender;
+            _database = database;
         }
 
-        public void PerformOperation(AddProductCommand command)
+        public void PerformOperation(AddProductCommand operation)
         {
-            Database database = Database.GetInstance();
-
-            ProductsXTransaction pxt = new ProductsXTransaction();
             Transaction transaction = new Transaction();
-            Product product = database.Products.FirstOrDefault(x => x.Name == command.Name);
-            Account account = database.Accounts.FirstOrDefault(x => x.Id == command.AccountId);
+
+            Account account = _database.Accounts.FirstOrDefault(x => x.IbanCode == operation.Iban);
 
             if (account == null)
             {
                 throw new Exception("Invalid Account");
             }
-            else if (product.Limit < command.Quantity)
+            double total = 0;
+            foreach (var item in operation.Details)
             {
-                throw new Exception("Product not in stock");
+                Product product = _database.Products.FirstOrDefault(x => x.Id == item.idProd);
+
+                if (product.Limit < item.Quantity)
+                {
+                    throw new Exception("Product not in stock");
+                }
+                total += product.Value * item.Quantity;
+
+                if (account.Balance < total)
+                {
+                    throw new Exception("Insufficient funds");
+                }
+
+                ProductsXTransaction pxt = new ProductsXTransaction
+                {
+                    ProductId = product.Id,
+                    TransactionId = transaction.Id,
+                    Quantity = item.Quantity
+                };
+                product.Limit -= item.Quantity;
+
+
+                _database.ProductsXTransactions.Add(pxt);
             }
-            else if (account.Balance < command.Quantity * command.Value)
-            {
-                throw new Exception("Insufficient funds");
-            }
 
-            pxt.ProductId = product.Id;
-            pxt.TransactionId = transaction.Id;
-            pxt.Quantity = command.Quantity;
-
-            product.Limit -= command.Quantity;
-
-            database.ProductsXTransactions.Add(pxt);
-
-            database.SaveChanges();
-
-
-
+            _database.SaveChanges();
         }
     }
 }

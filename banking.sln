@@ -17,6 +17,15 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PaymentGateway.Abstractions
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PaymentGateway.ExternalServices", "PaymentGateway.ExternalServices\PaymentGateway.ExternalServices.csproj", "{96659E90-3236-4B14-964B-34C75C29218D}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution items", "Solution items", "{F50F4A4F-7A48-443F-A317-73F53CC4384F}"
+	ProjectSection(SolutionItems) = preProject
+		..\..\..\Downloads\dependencies.props = ..\..\..\Downloads\dependencies.props
+		..\..\..\Downloads\Directory.Build.props = ..\..\..\Downloads\Directory.Build.props
+		..\..\..\Downloads\NuGet.config = ..\..\..\Downloads\NuGet.config
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PaymentGateway.WebApi", "PaymentGateway.WebApi\PaymentGateway.WebApi.csproj", "{612F2BFC-EEEC-4F9F-9E29-5ED81653313A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -51,6 +60,10 @@ Global
 		{96659E90-3236-4B14-964B-34C75C29218D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{96659E90-3236-4B14-964B-34C75C29218D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{96659E90-3236-4B14-964B-34C75C29218D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{612F2BFC-EEEC-4F9F-9E29-5ED81653313A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{612F2BFC-EEEC-4F9F-9E29-5ED81653313A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{612F2BFC-EEEC-4F9F-9E29-5ED81653313A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{612F2BFC-EEEC-4F9F-9E29-5ED81653313A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

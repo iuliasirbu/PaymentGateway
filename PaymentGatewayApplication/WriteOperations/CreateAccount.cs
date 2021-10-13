@@ -1,5 +1,6 @@
 ﻿using Abstractions;
 using PaymentGateway.Abstractions;
+using PaymentGateway.Application.ReadOperations;
 using PaymentGateway.Data;
 using PaymentGateway.Models;
 using PaymentGateway.PublishedLanguage.Events;
@@ -14,33 +15,31 @@ namespace PaymentGateway.Application.WriteOperations
 {
     public class CreateAccount : IWriteOperation<CreateAccountCommand>
     {
-        public IEventSender eventSender;
-        public CreateAccount(IEventSender eventSender)
+        private readonly IEventSender _eventSender;
+        private readonly AccountOptions _accountOptions;
+        private readonly Database _database;
+        private readonly NewIban _ibanService;
+
+        public CreateAccount(IEventSender eventSender, AccountOptions accountOptions, Database database, NewIban ibanService)
         {
-            this.eventSender = eventSender;
+            _eventSender = eventSender;
+            _accountOptions = accountOptions;
+            _database = database;
+            _ibanService = ibanService;
         }
 
         public void PerformOperation(CreateAccountCommand command)
         {
-            var random = new Random();
-            Database database = Database.GetInstance();
-            Account account = new Account();
-            account.IbanCode = random.Next(100000).ToString();
-            account.Balance = 0;
-            account.Type = command.Type;
-            account.Currency = command.Currency;
-            account.Limit = command.Limit;
-            account.Id = database.Accounts.Count + 1;
+            var person = _database.Persons.FirstOrDefault(e => e.Cnp == command.Cnp);
 
-            var person = database.Persons.FirstOrDefault(x => x.Cnp == command.Cnp);
 
             if (command.PersonId.HasValue)
             {
-                person = database.Persons.FirstOrDefault(x => x.Id == command.PersonId);
+                person = _database.Persons.FirstOrDefault(x => x.Id == command.PersonId);
             }
             else
             {
-                person = database.Persons.FirstOrDefault(x => x.Cnp == command.Cnp);
+                person = _database.Persons.FirstOrDefault(x => x.Cnp == command.Cnp);
 
             }
             if (person==null)
@@ -48,11 +47,21 @@ namespace PaymentGateway.Application.WriteOperations
                 throw new Exception("Person not found");
             }
 
-            database.Accounts.Add(account);
-            database.SaveChanges();
+            var account = new Account
+            {
+                IbanCode = _ibanService.GetNewIban(),
+                Balance = 0,
+                Type = command.Type,
+                Currency = command.Currency,
+                Limit = 500,
+                Id = _database.Accounts.Count + 1
+            };
+
+            _database.Accounts.Add(account);
+            _database.SaveChanges();
 
             AccountCreated eventAccountCreated = new(command.Iban, command.Type, command.Balance, command.Currency, command.Limit);
-            eventSender.EventSender(eventAccountCreated);
+            _eventSender.EventSender(eventAccountCreated);
 
         }
     }

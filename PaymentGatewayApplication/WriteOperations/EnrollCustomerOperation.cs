@@ -1,5 +1,6 @@
 ﻿using Abstractions;
 using PaymentGateway.Abstractions;
+using PaymentGateway.Application.ReadOperations;
 using PaymentGateway.Data;
 using PaymentGateway.Models;
 using PaymentGateway.PublishedLanguage.Events;
@@ -14,16 +15,18 @@ namespace PaymentGateway.Application.WriteOperations
 {
     public class EnrollCustomerOperation : IWriteOperation<EnrollCustomerCommand>
     {
-        public IEventSender eventSender;
-        public EnrollCustomerOperation(IEventSender eventSender)
+        private readonly IEventSender _eventSender;
+        private readonly Database _database;
+        private readonly NewIban _ibanService;
+        public EnrollCustomerOperation(IEventSender eventSender, Database database, NewIban ibanService)
         {
-            this.eventSender = eventSender;
+            _eventSender = eventSender;
+            _database = database;
+            _ibanService = ibanService;
         }
 
         public void PerformOperation(EnrollCustomerCommand operation)
         {
-            var random = new Random();
-            Database database = Database.GetInstance();
             Person person = new Person();
             person.Cnp = operation.Cnp;
             person.Name = operation.Name;
@@ -41,19 +44,19 @@ namespace PaymentGateway.Application.WriteOperations
                 throw new Exception("Unsupported person type");
             }
 
-            database.Persons.Add(person);
+            _database.Persons.Add(person);
 
             Account account = new Account();
             account.Type = operation.AccountType;
             account.Currency = operation.Currency;
             account.Balance = 0;
-            account.IbanCode = random.Next(100000).ToString();
+            account.IbanCode = _ibanService.GetNewIban();
 
-            database.Accounts.Add(account);
-            database.SaveChanges();
+            _database.Accounts.Add(account);
+            _database.SaveChanges();
 
             CustomerEnrolled eventCustEnroll = new CustomerEnrolled(operation.Name, operation.Cnp, operation.ClientType);
-            eventSender.EventSender(eventCustEnroll);
+            _eventSender.EventSender(eventCustEnroll);
         }
     }
 }

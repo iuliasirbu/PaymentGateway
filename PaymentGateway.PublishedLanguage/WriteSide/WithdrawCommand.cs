@@ -8,8 +8,8 @@ namespace PaymentGateway.PublishedLanguage.WriteSide
 {
     public class WithdrawCommand
     {
-        public int AccountId { get; set; }
-        public string Currency { get; set; }
+        public string Cnp { get; set; }
+        public string Iban { get; set; }
         public double Amount { get; set; }
     }
 }

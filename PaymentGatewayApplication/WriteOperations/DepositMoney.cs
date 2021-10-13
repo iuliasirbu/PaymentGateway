@@ -14,30 +14,30 @@ namespace PaymentGateway.Application.WriteOperations
 {
     public class DepositMoney : IWriteOperation<DepositCommand>
     {
-        public IEventSender eventSender;
-        public DepositMoney(IEventSender eventSender)
+        private readonly IEventSender _eventSender;
+        private readonly Database _database;
+        public DepositMoney(IEventSender eventSender, Database database)
         {
-            this.eventSender = eventSender;
+            _eventSender = eventSender;
+            _database = database;
         }
         public void PerformOperation(DepositCommand command)
         {
+            var person = _database.Persons.FirstOrDefault(p => p.Cnp == command.Cnp);
+            if (person == null)
+            {
+                throw new Exception("User Not Found");
+            }
 
-            Database database = Database.GetInstance();
+            var account = _database.Accounts.FirstOrDefault(acc => acc.IbanCode == command.Iban);
+            if (account == null)
+            {
+                throw new Exception("Account Not Found");
+            }
+
             Transaction transaction = new Transaction();
             transaction.Amount = command.Amount;
             transaction.Date = DateTime.UtcNow;
-
-            var account = database.Accounts.FirstOrDefault(x => x.Id == command.AccountId);
-            if (account == null)
-            {
-                throw new Exception("Invalid account");
-            }
-            if (account.Currency != command.Currency)
-            {
-                throw new Exception("The currency is not valid");
-
-            }
-
 
             if ((account.Balance += transaction.Amount) > account.Limit)
             {
@@ -47,19 +47,18 @@ namespace PaymentGateway.Application.WriteOperations
             {
                 account.Balance += transaction.Amount;
             }
-
-            database.Transactions.Add(transaction);
-            database.TransactionCreated();
+               
+            _database.Transactions.Add(transaction);
+            _database.TransactionCreated();
 
 
             TransactionCreated eventMoneyDeposit = new TransactionCreated
             {
-                AccountId = command.AccountId,
                 Currency = command.Currency,
                 Amount = command.Amount,
                 Iban = account.IbanCode
             };
-            eventSender.EventSender(eventMoneyDeposit);
+            _eventSender.EventSender(eventMoneyDeposit);
 
         }
     }

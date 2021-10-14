@@ -1,5 +1,4 @@
 ﻿using MediatR;
-using PaymentGateway.Abstractions;
 using PaymentGateway.Application.Services;
 using PaymentGateway.Data;
 using PaymentGateway.Models;

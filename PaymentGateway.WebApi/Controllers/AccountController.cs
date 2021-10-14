@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using PaymentGateway.Application.Queries;
-using PaymentGateway.Application.WriteOperations;
 using PaymentGateway.PublishedLanguage.Command;
 using System.Collections.Generic;
 using System.Threading;

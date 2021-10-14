@@ -12,12 +12,12 @@ namespace PaymentGateway.Application.WriteOperations
 {
     public class PurchaseProduct : IRequestHandler<AddProductCommand>
     {
-        private readonly IEventSender _eventSender;
+        private readonly IMediator _mediator;
         private readonly Database _database;
 
-        public PurchaseProduct(IEventSender eventSender, Database database)
+        public PurchaseProduct(IMediator mediator, Database database)
         {
-            _eventSender = eventSender;
+            _mediator = mediator;
             _database = database;
         }
 

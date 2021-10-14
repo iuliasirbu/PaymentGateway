@@ -33,7 +33,7 @@ namespace PaymentGateway
             var services = new ServiceCollection();
             services.RegisterBusinessServices(Configuration);
 
-            services.AddSingleton<IEventSender, EventSender>();
+            //services.AddSingleton<IEventSender, EventSender>();
             services.AddSingleton(Configuration);
 
             // build

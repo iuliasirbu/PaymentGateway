@@ -14,15 +14,15 @@ namespace PaymentGateway.Application.WriteOperations
 {
     public class WithdrawMoney:IRequestHandler<WithdrawCommand>
     {
-        public IEventSender eventSender;
+        private readonly IMediator _mediator;
         private readonly Database _database;
 
-        public WithdrawMoney(IEventSender eventSender, Database database)
+        public WithdrawMoney(IMediator mediator, Database database)
         {
-            this.eventSender = eventSender;
+            _mediator = mediator;
             _database = database;
         }
-        public Task<Unit> Handle(WithdrawCommand request, CancellationToken cancellationToken)
+        public async Task<Unit> Handle(WithdrawCommand request, CancellationToken cancellationToken)
         {            
             var account = _database.Accounts.FirstOrDefault(x => x.IbanCode == request.Iban);
             if (account == null)
@@ -72,8 +72,8 @@ namespace PaymentGateway.Application.WriteOperations
                 Amount = request.Amount,
                 Iban = account.IbanCode
             };
-            eventSender.EventSender(eventMoneyWithdraw);
-            return Unit.Task;
+            await _mediator.Publish(eventMoneyWithdraw, cancellationToken);
+            return Unit.Value;
 
         }
     }

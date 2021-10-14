@@ -13,14 +13,14 @@ namespace PaymentGateway.Application.WriteOperations
 {
     public class DepositMoney : IRequestHandler<DepositCommand>
     {
-        private readonly IEventSender _eventSender;
+        private readonly IMediator _mediator;
         private readonly Database _database;
-        public DepositMoney(IEventSender eventSender, Database database)
+        public DepositMoney(IMediator mediator, Database database)
         {
-            _eventSender = eventSender;
+            _mediator = mediator;
             _database = database;
         }
-        public Task<Unit> Handle(DepositCommand request, CancellationToken cancellationToken)
+        public async Task<Unit> Handle(DepositCommand request, CancellationToken cancellationToken)
         {
             var person = _database.Persons.FirstOrDefault(p => p.Cnp == request.Cnp);
             if (person == null)
@@ -57,8 +57,8 @@ namespace PaymentGateway.Application.WriteOperations
                 Amount = request.Amount,
                 Iban = account.IbanCode
             };
-            _eventSender.EventSender(eventMoneyDeposit);
-            return Unit.Task;
+            await _mediator.Publish(eventMoneyDeposit, cancellationToken);
+            return Unit.Value;
         }
     }
 }

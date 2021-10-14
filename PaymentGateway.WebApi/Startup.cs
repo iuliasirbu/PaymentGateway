@@ -4,7 +4,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using PaymentGateway.WebApi.Swagger;
 using PaymentGateway.Application;
-using PaymentGateway.Application.WriteOperations;
 using PaymentGateway.Abstractions;
 using PaymentGateway.ExternalServices;
 

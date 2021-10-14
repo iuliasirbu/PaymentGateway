@@ -1,19 +1,18 @@
-﻿using Abstractions;
+﻿using MediatR;
 using PaymentGateway.Abstractions;
-using PaymentGateway.Application.ReadOperations;
+using PaymentGateway.Application.Services;
 using PaymentGateway.Data;
 using PaymentGateway.Models;
+using PaymentGateway.PublishedLanguage.Command;
 using PaymentGateway.PublishedLanguage.Events;
-using PaymentGateway.PublishedLanguage.WriteSide;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+
 
 namespace PaymentGateway.Application.WriteOperations
 {
-    public class EnrollCustomerOperation : IWriteOperation<EnrollCustomerCommand>
+    public class EnrollCustomerOperation : IRequestHandler<EnrollCustomerCommand>
     {
         private readonly IEventSender _eventSender;
         private readonly Database _database;
@@ -25,16 +24,18 @@ namespace PaymentGateway.Application.WriteOperations
             _ibanService = ibanService;
         }
 
-        public void PerformOperation(EnrollCustomerCommand operation)
+        public Task<Unit> Handle(EnrollCustomerCommand request, CancellationToken cancellationToken)
         {
-            Person person = new Person();
-            person.Cnp = operation.Cnp;
-            person.Name = operation.Name;
-            if (operation.ClientType == "Company")
+            var person = new Person
+            {
+                Cnp = request.Cnp,
+                Name = request.Name
+            };
+            if (request.ClientType == "Company")
             {
                 person.Type = PersonType.Company;
             } 
-            else if (operation.ClientType == "Individual")
+            else if (request.ClientType == "Individual")
             {
                 person.Type = PersonType.Individual;
 
@@ -44,19 +45,23 @@ namespace PaymentGateway.Application.WriteOperations
                 throw new Exception("Unsupported person type");
             }
 
+            person.Id = _database.Persons.Count + 1;
+
             _database.Persons.Add(person);
 
             Account account = new Account();
-            account.Type = operation.AccountType;
-            account.Currency = operation.Currency;
+            account.Type = request.AccountType;
+            account.Currency = request.Currency;
             account.Balance = 0;
             account.IbanCode = _ibanService.GetNewIban();
 
             _database.Accounts.Add(account);
             _database.SaveChanges();
 
-            CustomerEnrolled eventCustEnroll = new CustomerEnrolled(operation.Name, operation.Cnp, operation.ClientType);
+            CustomerEnrolled eventCustEnroll = new CustomerEnrolled(request.Name, request.Cnp, request.ClientType);
             _eventSender.EventSender(eventCustEnroll);
+            return Unit.Task;
+
         }
     }
 }

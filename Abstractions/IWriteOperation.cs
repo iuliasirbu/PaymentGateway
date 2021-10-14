@@ -1,9 +1,7 @@
-﻿using System;
-
-namespace Abstractions
-{
-    public interface IWriteOperation<T>
-    {
-        public void PerformOperation(T operation);
-    }
-}
+﻿//namespace Abstractions
+//{
+//    public interface IWriteOperation<TCommand> // IRequest<TCommand>
+//    {
+//        void PerformOperation(TCommand operation);
+//    }
+//}

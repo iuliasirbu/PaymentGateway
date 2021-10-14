@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using MediatR;
 
 namespace PaymentGateway.PublishedLanguage.Events
 {
-    public class TransactionCreated
+    public class TransactionCreated:INotification
     {
         public int AccountId { get; set; }
         public string Iban { get; set; }

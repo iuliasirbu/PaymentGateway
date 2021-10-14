@@ -1,19 +1,18 @@
-﻿using Abstractions;
+﻿using MediatR;
 using PaymentGateway.Abstractions;
-using PaymentGateway.Application.ReadOperations;
+using PaymentGateway.Application.Services;
 using PaymentGateway.Data;
 using PaymentGateway.Models;
+using PaymentGateway.PublishedLanguage.Command;
 using PaymentGateway.PublishedLanguage.Events;
-using PaymentGateway.PublishedLanguage.WriteSide;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace PaymentGateway.Application.WriteOperations
 {
-    public class CreateAccount : IWriteOperation<CreateAccountCommand>
+    public class CreateAccount : IRequestHandler<CreateAccountCommand>
     {
         private readonly IEventSender _eventSender;
         private readonly AccountOptions _accountOptions;
@@ -28,18 +27,18 @@ namespace PaymentGateway.Application.WriteOperations
             _ibanService = ibanService;
         }
 
-        public void PerformOperation(CreateAccountCommand command)
+        public Task<Unit> Handle(CreateAccountCommand request, CancellationToken cancellationToken)
         {
-            var person = _database.Persons.FirstOrDefault(e => e.Cnp == command.Cnp);
+            var person = _database.Persons.FirstOrDefault(e => e.Cnp == request.Cnp);
 
 
-            if (command.PersonId.HasValue)
+            if (request.PersonId.HasValue)
             {
-                person = _database.Persons.FirstOrDefault(x => x.Id == command.PersonId);
+                person = _database.Persons.FirstOrDefault(x => x.Id == request.PersonId);
             }
             else
             {
-                person = _database.Persons.FirstOrDefault(x => x.Cnp == command.Cnp);
+                person = _database.Persons.FirstOrDefault(x => x.Cnp == request.Cnp);
 
             }
             if (person==null)
@@ -51,8 +50,8 @@ namespace PaymentGateway.Application.WriteOperations
             {
                 IbanCode = _ibanService.GetNewIban(),
                 Balance = 0,
-                Type = command.Type,
-                Currency = command.Currency,
+                Type = request.Type,
+                Currency = request.Currency,
                 Limit = 500,
                 Id = _database.Accounts.Count + 1
             };
@@ -60,9 +59,11 @@ namespace PaymentGateway.Application.WriteOperations
             _database.Accounts.Add(account);
             _database.SaveChanges();
 
-            AccountCreated eventAccountCreated = new(command.Iban, command.Type, command.Balance, command.Currency, command.Limit);
+            AccountCreated eventAccountCreated = new(request.Iban, request.Type, request.Balance, request.Currency, request.Limit);
             _eventSender.EventSender(eventAccountCreated);
 
+        
+        return Unit.Task;
         }
     }
 }

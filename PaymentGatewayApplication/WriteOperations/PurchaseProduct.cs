@@ -1,18 +1,16 @@
-﻿
-using Abstractions;
+﻿using MediatR;
 using PaymentGateway.Abstractions;
 using PaymentGateway.Data;
 using PaymentGateway.Models;
-using PaymentGateway.PublishedLanguage.WriteSide;
+using PaymentGateway.PublishedLanguage.Command;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace PaymentGateway.Application.WriteOperations
 {
-    public class PurchaseProduct : IWriteOperation<AddProductCommand>
+    public class PurchaseProduct : IRequestHandler<AddProductCommand>
     {
         private readonly IEventSender _eventSender;
         private readonly Database _database;
@@ -23,18 +21,18 @@ namespace PaymentGateway.Application.WriteOperations
             _database = database;
         }
 
-        public void PerformOperation(AddProductCommand operation)
+        public Task<Unit> Handle(AddProductCommand request, CancellationToken cancellationToken)
         {
             Transaction transaction = new Transaction();
 
-            Account account = _database.Accounts.FirstOrDefault(x => x.IbanCode == operation.Iban);
+            Account account = _database.Accounts.FirstOrDefault(x => x.IbanCode == request.Iban);
 
             if (account == null)
             {
                 throw new Exception("Invalid Account");
             }
             double total = 0;
-            foreach (var item in operation.Details)
+            foreach (var item in request.Details)
             {
                 Product product = _database.Products.FirstOrDefault(x => x.Id == item.idProd);
 
@@ -62,6 +60,8 @@ namespace PaymentGateway.Application.WriteOperations
             }
 
             _database.SaveChanges();
+            return Unit.Task;
+
         }
     }
 }

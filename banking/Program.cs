@@ -3,14 +3,16 @@ using Microsoft.Extensions.DependencyInjection;
 using PaymentGateway.Abstractions;
 using PaymentGateway.Application;
 using PaymentGateway.Application.ReadOperations;
+using PaymentGateway.Application.Services;
 using PaymentGateway.Application.WriteOperations;
 using PaymentGateway.Data;
 using PaymentGateway.ExternalServices;
 using PaymentGateway.Models;
-using PaymentGateway.PublishedLanguage.WriteSide;
+using PaymentGateway.PublishedLanguage.Command;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace PaymentGateway
 
@@ -18,7 +20,7 @@ namespace PaymentGateway
     class Program
     {
         static IConfiguration Configuration;
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
             Configuration = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
@@ -38,6 +40,7 @@ namespace PaymentGateway
             var serviceProvider = services.BuildServiceProvider();
             var database = serviceProvider.GetRequiredService<Database>();
             var ibanService = serviceProvider.GetRequiredService<NewIban>();
+            var mediator = serviceProvider.GetRequiredService<MediatR.IMediator>();
 
             // use
             var enrollCustomer = new EnrollCustomerCommand
@@ -49,8 +52,7 @@ namespace PaymentGateway
                 Cnp = "23"
             };
 
-            var enrollCustomerOperation = serviceProvider.GetRequiredService<EnrollCustomerOperation>();
-            enrollCustomerOperation.PerformOperation(enrollCustomer);
+            await mediator.Send(enrollCustomer, default);
 
             var makeAccountDetails = new CreateAccountCommand
             {
@@ -59,7 +61,7 @@ namespace PaymentGateway
                 Currency = "Eur"
             };
             var makeAccountOperation = serviceProvider.GetRequiredService<CreateAccount>();
-            makeAccountOperation.PerformOperation(makeAccountDetails);
+            makeAccountOperation.Handle(makeAccountDetails, default).GetAwaiter().GetResult();
 
 
 
@@ -72,7 +74,7 @@ namespace PaymentGateway
             };
 
             var makeDeposit = serviceProvider.GetRequiredService<DepositMoney>();
-            makeDeposit.PerformOperation(depositDetails);
+            makeDeposit.Handle(depositDetails, default).GetAwaiter().GetResult();
 
             var withdrawDetails = new WithdrawCommand
             {
@@ -82,7 +84,7 @@ namespace PaymentGateway
             };
 
             var makeWithdraw = serviceProvider.GetRequiredService<WithdrawMoney>();
-            makeWithdraw.PerformOperation(withdrawDetails);
+            makeWithdraw.Handle(withdrawDetails, default).GetAwaiter().GetResult();
 
             var produs = new Product
             {
@@ -138,8 +140,15 @@ namespace PaymentGateway
             };
 
             var purchaseProduct = serviceProvider.GetRequiredService<PurchaseProduct>();
-            purchaseProduct.PerformOperation(comanda);
+            purchaseProduct.Handle(comanda, default).GetAwaiter().GetResult();
 
+            var query = new Application.ReadOperations.ListOfAccounts.Query
+            {
+                PersonId = 1
+            };
+
+            var handler = serviceProvider.GetRequiredService<ListOfAccounts.QueryHandler>();
+            var result = handler.Handle(query, default).GetAwaiter().GetResult();
 
         }
     }

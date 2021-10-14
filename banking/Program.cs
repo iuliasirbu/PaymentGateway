@@ -2,7 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using PaymentGateway.Abstractions;
 using PaymentGateway.Application;
-using PaymentGateway.Application.ReadOperations;
+using PaymentGateway.Application.Queries;
 using PaymentGateway.Application.Services;
 using PaymentGateway.Application.WriteOperations;
 using PaymentGateway.Data;
@@ -142,7 +142,7 @@ namespace PaymentGateway
             var purchaseProduct = serviceProvider.GetRequiredService<PurchaseProduct>();
             purchaseProduct.Handle(comanda, default).GetAwaiter().GetResult();
 
-            var query = new Application.ReadOperations.ListOfAccounts.Query
+            var query = new Application.Queries.ListOfAccounts.Query
             {
                 PersonId = 1
             };

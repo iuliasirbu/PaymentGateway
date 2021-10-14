@@ -49,16 +49,18 @@ namespace PaymentGateway.Application.WriteOperations
 
             _database.Persons.Add(person);
 
-            Account account = new Account();
-            account.Type = request.AccountType;
-            account.Currency = request.Currency;
-            account.Balance = 0;
-            account.IbanCode = _ibanService.GetNewIban();
+            Account account = new()
+            {
+                Type = request.AccountType,
+                Currency = request.Currency,
+                Balance = 0,
+                IbanCode = _ibanService.GetNewIban()
+            };
 
             _database.Accounts.Add(account);
             _database.SaveChanges();
 
-            CustomerEnrolled eventCustEnroll = new CustomerEnrolled(request.Name, request.Cnp, request.ClientType);
+            CustomerEnrolled eventCustEnroll = new(request.Name, request.Cnp, request.ClientType);
             _eventSender.EventSender(eventCustEnroll);
             return Unit.Task;
 

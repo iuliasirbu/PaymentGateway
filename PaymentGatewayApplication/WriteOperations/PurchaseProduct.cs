@@ -23,7 +23,7 @@ namespace PaymentGateway.Application.WriteOperations
 
         public Task<Unit> Handle(AddProductCommand request, CancellationToken cancellationToken)
         {
-            Transaction transaction = new Transaction();
+            Transaction transaction = new();
 
             Account account = _database.Accounts.FirstOrDefault(x => x.IbanCode == request.Iban);
 
@@ -47,7 +47,7 @@ namespace PaymentGateway.Application.WriteOperations
                     throw new Exception("Insufficient funds");
                 }
 
-                ProductsXTransaction pxt = new ProductsXTransaction
+                ProductsXTransaction pxt = new()
                 {
                     ProductId = product.Id,
                     TransactionId = transaction.Id,

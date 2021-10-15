@@ -19,4 +19,8 @@
     <ProjectReference Include="..\PaymentGateway.PublishedLanguage\PaymentGateway.PublishedLanguage.csproj" />
   </ItemGroup>
 
+	<ItemGroup>
+	  <Folder Include="Validators\" />
+	</ItemGroup>
+
 </Project>

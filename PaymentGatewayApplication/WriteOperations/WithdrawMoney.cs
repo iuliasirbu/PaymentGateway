@@ -46,11 +46,13 @@ namespace PaymentGateway.Application.WriteOperations
                 throw new Exception("insufficient funds");
             }
 
-            var transaction = new Transaction();
-            transaction.Amount = request.Amount;
-            transaction.Currency = account.Currency;
-            transaction.Date = DateTime.UtcNow;
-            transaction.Type = "Withdraw";
+            var transaction = new Transaction
+            {
+                Amount = request.Amount,
+                Currency = account.Currency,
+                Date = DateTime.UtcNow,
+                Type = "Withdraw"
+            };
 
             if ((account.Balance -= transaction.Amount) < 0)
             {
@@ -63,10 +65,10 @@ namespace PaymentGateway.Application.WriteOperations
 
 
             _database.Transactions.Add(transaction);
-            _database.TransactionCreated();
+            Database.TransactionCreated();
 
 
-            TransactionCreated eventMoneyWithdraw = new TransactionCreated
+            TransactionCreated eventMoneyWithdraw = new()
             {
                 Amount = request.Amount,
                 Iban = account.IbanCode

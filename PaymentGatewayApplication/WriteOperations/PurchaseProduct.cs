@@ -33,7 +33,7 @@ namespace PaymentGateway.Application.WriteOperations
             double total = 0;
             foreach (var item in request.Details)
             {
-                Product product = _database.Products.FirstOrDefault(x => x.Id == item.idProd);
+                Product product = _database.Products.FirstOrDefault(x => x.Id == item.ProductId);
 
                 if (product.Limit < item.Quantity)
                 {
@@ -58,7 +58,7 @@ namespace PaymentGateway.Application.WriteOperations
                 _database.ProductsXTransactions.Add(pxt);
             }
 
-            _database.SaveChanges();
+            Database.SaveChanges();
             return Unit.Task;
 
         }

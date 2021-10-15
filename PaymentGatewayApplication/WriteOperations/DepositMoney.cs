@@ -33,9 +33,11 @@ namespace PaymentGateway.Application.WriteOperations
                 throw new Exception("Account Not Found");
             }
 
-            Transaction transaction = new Transaction();
-            transaction.Amount = request.Amount;
-            transaction.Date = DateTime.UtcNow;
+            Transaction transaction = new()
+            {
+                Amount = request.Amount,
+                Date = DateTime.UtcNow
+            };
 
             if ((account.Balance += transaction.Amount) > account.Limit)
             {
@@ -47,10 +49,10 @@ namespace PaymentGateway.Application.WriteOperations
             }
                
             _database.Transactions.Add(transaction);
-            _database.TransactionCreated();
+            Database.TransactionCreated();
 
 
-            TransactionCreated eventMoneyDeposit = new TransactionCreated
+            TransactionCreated eventMoneyDeposit = new()
             {
                 Currency = request.Currency,
                 Amount = request.Amount,

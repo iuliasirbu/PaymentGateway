@@ -48,15 +48,17 @@ namespace PaymentGateway.Application.WriteOperations
             var account = new Account
             {
                 IbanCode = _ibanService.GetNewIban(),
-                Balance = 0,
+                Balance = 500,
                 Type = request.Type,
                 Currency = request.Currency,
                 Limit = 500,
                 Id = _database.Accounts.Count + 1
             };
 
+            person.Accounts.Add(account);
+
             _database.Accounts.Add(account);
-            _database.SaveChanges();
+            Database.SaveChanges();
 
             AccountCreated eventAccountCreated = new(request.Iban, request.Type, request.Balance, request.Currency, request.Limit);
             await _mediator.Publish(eventAccountCreated, cancellationToken);

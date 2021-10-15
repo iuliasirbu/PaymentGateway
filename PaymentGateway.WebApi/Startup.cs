@@ -8,6 +8,8 @@ using PaymentGateway.ExternalServices;
 using PaymentGateway.Application.Queries;
 using MediatR;
 using PaymentGateway.PublishedLanguage.Events;
+using FluentValidation;
+using MediatR.Pipeline;
 
 namespace PaymentGateway.WebApi
 {
@@ -24,13 +26,17 @@ namespace PaymentGateway.WebApi
             services.AddControllers();
             services.AddMvc(o => o.EnableEndpointRouting = false);
 
-            //services.AddSingleton<IEventSender, EventSender>();
+            services.Scan(scan => scan
+                .FromAssemblyOf<ListOfAccounts>()
+                .AddClasses(classes => classes.AssignableTo<IValidator>())
+                .AsImplementedInterfaces()
+                .WithScopedLifetime());
 
-            var firstAssembly = typeof(ListOfAccounts).Assembly; // handlere c1..c3
-            //var firstAssembly = typeof(Program).Assembly; // handler generic
-            var secondAssembly = typeof(AllEventsHandler).Assembly; // catch all
-            //var trdasembly = System.Reflection.Assembly.LoadFrom("c:/a.dll");
-            services.AddMediatR(new[] { firstAssembly, secondAssembly }); // get all IRequestHandler and INotificationHandler classes
+            services.AddMediatR(new[] { typeof(ListOfAccounts).Assembly, typeof(AllEventsHandler).Assembly }); // get all IRequestHandler and INotificationHandler classes
+
+            services.AddScoped(typeof(IPipelineBehavior<,>), typeof(RequestPreProcessorBehavior<,>));
+            services.AddScoped(typeof(IPipelineBehavior<,>), typeof(RequestPostProcessorBehavior<,>));
+
             services.AddScopedContravariant<INotificationHandler<INotification>, AllEventsHandler>(typeof(CustomerEnrolled).Assembly);
 
             services.RegisterBusinessServices(Configuration);

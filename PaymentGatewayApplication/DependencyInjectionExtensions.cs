@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using PaymentGateway.Application.Services;
-using static PaymentGateway.Application.Queries.ListOfAccounts;
 
 namespace PaymentGateway.Application
 {

@@ -11,6 +11,7 @@ using PaymentGateway.PublishedLanguage.Events;
 using FluentValidation;
 using MediatR.Pipeline;
 using PaymentGateway.WebApi.MediatorPipeline;
+using PaymentGateway.WebApi.Middleware;
 
 namespace PaymentGateway.WebApi
 {
@@ -49,6 +50,7 @@ namespace PaymentGateway.WebApi
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IConfiguration configuration)
         {
+            app.UseMiddleware<ErrorMiddleware>(); // error 
             app.UseCors(cors =>
             {
                 cors

@@ -14,6 +14,7 @@ namespace PaymentGateway.Application.Queries
         {
             public Validator(Database _database)
             {
+                // cod corect 
                 RuleFor(q => q).Must(query =>
                 {
                     var person = query.PersonId.HasValue ?
@@ -22,6 +23,24 @@ namespace PaymentGateway.Application.Queries
 
                     return person != null;
                 }).WithMessage("Customer not found");
+
+                //cod gresit
+            //    RuleFor(q => q.PersonId).Must(personId =>
+            //    {
+            //        return personId.HasValue;
+            //    }).WithMessage("Customer data is invalid - personid");
+
+            //    RuleFor(q => q.Cnp).Must(cnp =>
+            //    {
+            //        return !string.IsNullOrEmpty(cnp);
+            //    }).WithMessage("CNP is empty");
+
+            //    RuleFor(q => q.PersonId).Must(personId =>
+            //    {
+            //        var exists = database.Persons.Any(x => x.Id == personId);
+            //        return exists;
+            //    }).WithMessage("Customer does not exist");
+            //}
             }
         }
 
@@ -33,7 +52,7 @@ namespace PaymentGateway.Application.Queries
 
                 RuleFor(q => q).Must(query =>
                 {
-                    return query.PersonId.HasValue && !string.IsNullOrEmpty(query.Cnp);
+                    return query.PersonId.HasValue || !string.IsNullOrEmpty(query.Cnp);
                 }).WithMessage("Customer data is invalid");
             }
         }
